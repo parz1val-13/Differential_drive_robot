@@ -125,12 +125,56 @@ def circular_path(r, s, t):
     tank_pair.off()
 
 
+def follow_command(command):
+    tank_pair = MoveTank(OUTPUT_B, OUTPUT_C)
+    tank_pair.gyro = GyroSensor()
+    tank_pair.gyro.reset()
+    tank_pair.gyro.calibrate()
+
+    track_width = 100  # Distance between the tyres in mm
+    est_x = 0.0
+    est_y = 0.0
+    est_angle = 0.0
+    r = 28
+    max_rpm = (160 + 170) / 2
+    max_rps = max_rpm / 60
+    circumference = 2 * math.pi * r
+
+    
+    for row in command:
+        power_left = row[0]
+        power_right = row[1]
+        duration = row[2]
+
+        tank_pair.on_for_seconds(power_left, power_right, duration)
+        angular_velocity = tank_pair.gyro.rate
+
+        change_in_angle = angular_velocity * duration
+        est_angle += change_in_angle
+        dist_traveled = change_in_angle * (track_width / 2)
+
+        est_x += dist_traveled * math.cos(math.radians(est_angle))
+        est_y += dist_traveled * math.sin(math.radians(est_angle))
+
+        print(f"Final Estimated Position (X, Y): ({est_x:.2f} mm, {est_y:.2f} mm)")
+        print(f"Final Estimated Orientation: {est_angle:.2f} degrees")
+
+        '''gyro_data = tank_pair.gyro.angle
+
+        left_wheel_dist = power_left * max_rps * circumference
+        right_wheel_dist = power_right * max_rps * circumference
+        avg_dist = (left_wheel_dist + right_wheel_dist) / 2
+        est_x += avg_dist * math.cos(math.radians(gyro_data))
+        est_y += avg_dist * math.sin(math.radians(gyro_data))
+        print(f"Final Estimated Position (X, Y): ({est_x:.2f} mm, {est_y:.2f} mm)")'''
+
+
+
 def main():
     tank_pair = MoveTank(OUTPUT_B, OUTPUT_C)
     #single_motor = LargeMotor(OUTPUT_B)
 
-    tank_pair.gyro = GyroSensor()
-    tank_pair.gyro.calibrate()
+
     color_sensor = ColorSensor()
 
     for _ in range(3):  # Draw each shape 3 times
@@ -144,5 +188,8 @@ def main():
     for _ in range(3):  # Draw each shape 3 times
         circular_path(10, 70, 5)
 
+    command = [[80, 60, 2], [60,60,1], [-50, 80, 2]]
+
+    follow_command(command)
 
 main()
