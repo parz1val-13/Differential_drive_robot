@@ -82,8 +82,15 @@ def rectangular_path_2():
 # Function to move the robot in a rectangular path, method #3
 def rectangular_path_3():
     track_width = 100  # Distance between the tyres in mm
-    circumference = 2 * math.pi * track_width
-    revolutions = 500 / circumference  # To calc the no. of revs required to cover 500mm
+    turn_radius = (2 * math.pi * track_width) / 4
+
+    revolutions = track_width / turn_radius  # To calc the no. of revs required to cover 500mm
+    travel_dist = revolutions * 360  # Degrees
+    tank_pair = MoveTank(OUTPUT_B, OUTPUT_C)
+
+    '''for _ in range(2):
+        # To move forawd
+        tank_pair.on_for_rotations(-50, 50, travel_dist)'''
 
 
 # Function to move the robot in a lemniscate path
@@ -129,6 +136,7 @@ def main():
     for _ in range(3):  # Draw each shape 3 times
         rectangular_path()
         #rectangular_path_2()
+        #rectangular_path_3()
 
     for _ in range(3):  # Draw each shape 3 times
         lemniscate_path()
