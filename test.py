@@ -18,17 +18,10 @@ from time import sleep
 
 import math
 
-#btn = Button() # we will use any button to stop script
-
-tank_pair = MoveTank(OUTPUT_B, OUTPUT_C)
-#single_motor = LargeMotor(OUTPUT_B)
-
-tank_pair.gyro = GyroSensor()
-
-tank_pair.gyro.calibrate()
 
 # Function to move the robot in a rectangular path
 def rectangular_path():
+    tank_pair = MoveTank(OUTPUT_B, OUTPUT_C)
     track_width = 140  # Distance between the front tyres in mm
     left_motor = OUTPUT_B  # Left motor port
     right_motor = OUTPUT_C  # Right motor port
@@ -70,16 +63,15 @@ def rectangular_path():
         tank_pair.turn_degrees(speed=SpeedPercent(5),target_angle=90)'''
 
    
-# Function to move the robot in a lemniscate path
-def rectangular_path_test():
+# Function to move the robot in a rectangular path, method #2
+def rectangular_path_2():
+    # This is 1/2 the distance between the fron tyres(midpoint)
+    # Could also be the full distance between the tyres, try both and keep adjusting
+    # Documentation is unclear
+    wheel_distance = 50
+    mdiff = MoveDifferential(OUTPUT_B, OUTPUT_C, EV3Tire, wheel_distance)
+
     for _ in range(4):
-        STUD_MM = 10
-
-        # test with a robot that:
-        # - uses the standard wheels known as EV3Tire
-        # - wheels are 16 studs apart
-        mdiff = MoveDifferential(OUTPUT_B, OUTPUT_C, EV3Tire, 17.25 * STUD_MM)
-
         # Drive forward 500 mm
         mdiff.on_for_distance(SpeedRPM(40), 500)
 
@@ -87,8 +79,23 @@ def rectangular_path_test():
         mdiff.turn_right(SpeedRPM(40), 90)
 
 
+# Function to move the robot in a rectangular path, method #3
+def rectangular_path_3():
+    track_width = 100  # Distance between the tyres in mm
+    turn_radius = (2 * math.pi * track_width) / 4
+
+    revolutions = track_width / turn_radius  # To calc the no. of revs required to cover 500mm
+    travel_dist = revolutions * 360  # Degrees
+    tank_pair = MoveTank(OUTPUT_B, OUTPUT_C)
+
+    '''for _ in range(2):
+        # To move forawd
+        tank_pair.on_for_rotations(-50, 50, travel_dist)'''
+
+
 # Function to move the robot in a lemniscate path
 def lemniscate_path():
+    tank_pair = MoveTank(OUTPUT_B, OUTPUT_C)
     for _ in range(2):
         # To move forawd
         tank_pair.on_for_seconds(50, 50, 5)
@@ -99,12 +106,14 @@ def lemniscate_path():
          # To turn right
         #tank_pair.on_for_seconds(-50,50, 1)
 
+
 # Function to move the robot in a circular path
 def circular_path(r, s, t):
     # 'r' is the radius in cm
     # 's' is the motor speed in %
     # 't' is the time in seconds
 
+    tank_pair = MoveTank(OUTPUT_B, OUTPUT_C)
     pi = math.pi
     c = 2 * pi * r  # Circumference formula
     
@@ -116,14 +125,71 @@ def circular_path(r, s, t):
     tank_pair.off()
 
 
+def follow_command(command):
+    tank_pair = MoveTank(OUTPUT_B, OUTPUT_C)
+    tank_pair.gyro = GyroSensor()
+    tank_pair.gyro.reset()
+    tank_pair.gyro.calibrate()
+
+    track_width = 100  # Distance between the tyres in mm
+    est_x = 0.0
+    est_y = 0.0
+    est_angle = 0.0
+    r = 28
+    max_rpm = (160 + 170) / 2
+    max_rps = max_rpm / 60
+    circumference = 2 * math.pi * r
+
+    
+    for row in command:
+        power_left = row[0]
+        power_right = row[1]
+        duration = row[2]
+
+        tank_pair.on_for_seconds(power_left, power_right, duration)
+        angular_velocity = tank_pair.gyro.rate
+
+        change_in_angle = angular_velocity * duration
+        est_angle += change_in_angle
+        dist_traveled = change_in_angle * (track_width / 2)
+
+        est_x += dist_traveled * math.cos(math.radians(est_angle))
+        est_y += dist_traveled * math.sin(math.radians(est_angle))
+
+        print(f"Final Estimated Position (X, Y): ({est_x:.2f} mm, {est_y:.2f} mm)")
+        print(f"Final Estimated Orientation: {est_angle:.2f} degrees")
+
+        '''gyro_data = tank_pair.gyro.angle
+
+        left_wheel_dist = power_left * max_rps * circumference
+        right_wheel_dist = power_right * max_rps * circumference
+        avg_dist = (left_wheel_dist + right_wheel_dist) / 2
+        est_x += avg_dist * math.cos(math.radians(gyro_data))
+        est_y += avg_dist * math.sin(math.radians(gyro_data))
+        print(f"Final Estimated Position (X, Y): ({est_x:.2f} mm, {est_y:.2f} mm)")'''
+
+
+
 def main():
+    tank_pair = MoveTank(OUTPUT_B, OUTPUT_C)
+    #single_motor = LargeMotor(OUTPUT_B)
+
+
+    color_sensor = ColorSensor()
 
     for _ in range(3):  # Draw each shape 3 times
         rectangular_path()
-    #for _ in range(3):  # Draw each shape 3 times
-    #lemniscate_path()
-    #for _ in range(3):  # Draw each shape 3 times
-        #circular_path(10, 70, 5)
+        #rectangular_path_2()
+        #rectangular_path_3()
 
-        
+    for _ in range(3):  # Draw each shape 3 times
+        lemniscate_path()
+
+    for _ in range(3):  # Draw each shape 3 times
+        circular_path(10, 70, 5)
+
+    command = [[80, 60, 2], [60,60,1], [-50, 80, 2]]
+
+    follow_command(command)
+
 main()
