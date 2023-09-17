@@ -18,17 +18,10 @@ from time import sleep
 
 import math
 
-#btn = Button() # we will use any button to stop script
-
-tank_pair = MoveTank(OUTPUT_B, OUTPUT_C)
-#single_motor = LargeMotor(OUTPUT_B)
-
-tank_pair.gyro = GyroSensor()
-
-tank_pair.gyro.calibrate()
 
 # Function to move the robot in a rectangular path
 def rectangular_path():
+    tank_pair = MoveTank(OUTPUT_B, OUTPUT_C)
     track_width = 140  # Distance between the front tyres in mm
     left_motor = OUTPUT_B  # Left motor port
     right_motor = OUTPUT_C  # Right motor port
@@ -70,16 +63,15 @@ def rectangular_path():
         tank_pair.turn_degrees(speed=SpeedPercent(5),target_angle=90)'''
 
    
-# Function to move the robot in a lemniscate path
-def rectangular_path_test():
+# Function to move the robot in a rectangular path, method #2
+def rectangular_path_2():
+    # This is 1/2 the distance between the fron tyres(midpoint)
+    # Could also be the full distance between the tyres, try both and keep adjusting
+    # Documentation is unclear
+    wheel_distance = 50
+    mdiff = MoveDifferential(OUTPUT_B, OUTPUT_C, EV3Tire, wheel_distance)
+
     for _ in range(4):
-        STUD_MM = 10
-
-        # test with a robot that:
-        # - uses the standard wheels known as EV3Tire
-        # - wheels are 16 studs apart
-        mdiff = MoveDifferential(OUTPUT_B, OUTPUT_C, EV3Tire, 17.25 * STUD_MM)
-
         # Drive forward 500 mm
         mdiff.on_for_distance(SpeedRPM(40), 500)
 
@@ -87,8 +79,16 @@ def rectangular_path_test():
         mdiff.turn_right(SpeedRPM(40), 90)
 
 
+# Function to move the robot in a rectangular path, method #3
+def rectangular_path_3():
+    track_width = 100  # Distance between the tyres in mm
+    circumference = 2 * math.pi * track_width
+    revolutions = 500 / circumference  # To calc the no. of revs required to cover 500mm
+
+
 # Function to move the robot in a lemniscate path
 def lemniscate_path():
+    tank_pair = MoveTank(OUTPUT_B, OUTPUT_C)
     for _ in range(2):
         # To move forawd
         tank_pair.on_for_seconds(50, 50, 5)
@@ -99,12 +99,14 @@ def lemniscate_path():
          # To turn right
         #tank_pair.on_for_seconds(-50,50, 1)
 
+
 # Function to move the robot in a circular path
 def circular_path(r, s, t):
     # 'r' is the radius in cm
     # 's' is the motor speed in %
     # 't' is the time in seconds
 
+    tank_pair = MoveTank(OUTPUT_B, OUTPUT_C)
     pi = math.pi
     c = 2 * pi * r  # Circumference formula
     
@@ -117,13 +119,22 @@ def circular_path(r, s, t):
 
 
 def main():
+    tank_pair = MoveTank(OUTPUT_B, OUTPUT_C)
+    #single_motor = LargeMotor(OUTPUT_B)
+
+    tank_pair.gyro = GyroSensor()
+    tank_pair.gyro.calibrate()
+    color_sensor = ColorSensor()
 
     for _ in range(3):  # Draw each shape 3 times
         rectangular_path()
-    #for _ in range(3):  # Draw each shape 3 times
-    #lemniscate_path()
-    #for _ in range(3):  # Draw each shape 3 times
-        #circular_path(10, 70, 5)
+        #rectangular_path_2()
 
-        
+    for _ in range(3):  # Draw each shape 3 times
+        lemniscate_path()
+
+    for _ in range(3):  # Draw each shape 3 times
+        circular_path(10, 70, 5)
+
+
 main()
