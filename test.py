@@ -115,9 +115,15 @@ def circular_path(r, s, t):
     tank_pair.wait_for_rotations(num_rotations, num_rotations)
     tank_pair.off()
 
-for _ in range(3):  # Draw each shape 3 times
-    rectangular_path()
-#for _ in range(3):  # Draw each shape 3 times
-#lemniscate_path()
-#for _ in range(3):  # Draw each shape 3 times
-    #circular_path(10, 70, 5)
+
+def main():
+
+    for _ in range(3):  # Draw each shape 3 times
+        rectangular_path()
+    #for _ in range(3):  # Draw each shape 3 times
+    #lemniscate_path()
+    #for _ in range(3):  # Draw each shape 3 times
+        #circular_path(10, 70, 5)
+
+        
+main()
