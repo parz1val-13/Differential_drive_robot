@@ -98,3 +98,56 @@ robot = DriveBase(left_motor, right_motor, wheel_diameter, axle_track)
 robot.drive_time(250, 90, 1000)
 # This stops the motor and brakes for accuracy
 robot.stop(Stop.BRAKE)
+
+make a c
+this is new starting point
+make a c opposite directiom
+new starting point`
+make a c again same Direction
+new starting point`
+make a c again opposite Direction
+repeat`
+
+while (3):
+    code for making a C
+    stop
+    code for making opposite C
+    stop
+    code for making a C
+    stop
+    code for making opposite C
+    stop
+
+
+
+
+#!/usr/bin/env python3
+
+from ev3dev2.motor import OUTPUT_B, OUTPUT_C, LargeMotor
+from math import pi
+from time import sleep
+
+# Connect the left and right motors to the appropriate ports.
+left_motor = LargeMotor(OUTPUT_B)
+right_motor = LargeMotor(OUTPUT_C)
+
+# Define the circle parameters.
+radius = 5  # Radius of the circle in centimeters
+angular_speed = 90  # Angular speed in degrees per second
+
+# Calculate the circumference of the circle.
+circumference = 2 * pi * radius
+
+# Calculate the time it takes to complete one full circle.
+circle_time = circumference / angular_speed
+
+try:
+    while True:
+        # Move both motors at the same speed in opposite directions to make a circle.
+        left_motor.on_for_seconds(angular_speed, circle_time)
+        right_motor.on_for_seconds(-angular_speed, circle_time)
+
+except KeyboardInterrupt:
+    # Stop the motors if the program is interrupted.
+    left_motor.off()
+    right_motor.off()
