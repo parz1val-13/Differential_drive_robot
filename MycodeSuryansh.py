@@ -151,3 +151,18 @@ except KeyboardInterrupt:
     # Stop the motors if the program is interrupted.
     left_motor.off()
     right_motor.off()
+
+
+Error Handling
+
+gyro_sensor = GyroSensor()
+gyro_sensor.mode = 'GYRO-ANG'  # Set the gyro sensor mode to measure angles.
+target_angle = 0
+while True:
+        # Read the current gyro sensor angle.
+        current_angle = gyro_sensor.angle
+
+        # Calculate the error between the current angle and the target angle.
+        error = target_angle - current_angle
+
+        print(error)
