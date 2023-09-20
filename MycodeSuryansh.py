@@ -166,3 +166,36 @@ while True:
         error = target_angle - current_angle
 
         print(error)
+
+
+from ev3dev2.sensor.lego import ColorSensor
+
+color_sensor = ColorSensor()
+
+target_intensity = 30
+base_speed = 20
+turn_speed = 40
+
+tank_drive = MoveTank(OUTPUT_A, OUTPUT_B)
+
+while True:
+    left_intensity = left_sensor.ambient_light_intensity
+    right_intensity = right_sensor.ambient_light_intensity
+    intensity_difference = left_intensity - right_intensity
+    speed_difference = intensity_difference*0.1
+    # Calculate the turn ratio to adjust the robot's direction
+    turn_ratio = speed_difference / 100  # Adjust this value as needed
+    # Calculate the left and right motor speeds
+    left_speed = base_speed - speed_difference
+    right_speed = base_speed + speed_difference
+
+    # Limit the motor speeds to prevent them from going beyond the allowed range
+    left_speed = max(-100, min(100, left_speed))
+    right_speed = max(-100, min(100, right_speed))
+
+    # Set the motor speeds
+    tank_drive.on(SpeedPercent(left_speed), SpeedPercent(right_speed))
+
+    # Sleep for a short time to avoid excessive CPU usage
+    sleep(0.1)
+
