@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from ev3dev2.motor import OUTPUT_B, OUTPUT_C, MoveTank
+'''from ev3dev2.motor import OUTPUT_B, OUTPUT_C, MoveTank
 import math
 
 # Define your wheel parameters (in millimeters)
@@ -60,4 +60,68 @@ tank_drive.on_for_rotations(25, -25, revolutions)
 
 
 # Close the motors
-tank_drive.off()
+tank_drive.off()'''
+
+from ev3dev2.sensor.lego import ColorSensor
+from ev3dev2.motor import OUTPUT_B, OUTPUT_C, MoveTank
+from time import sleep
+import sys
+
+
+def Cowardice():
+    left_sensor = ColorSensor('in1')
+    right_sensor = ColorSensor('in3')
+    base_speed = 15
+    tank_drive = MoveTank(OUTPUT_B, OUTPUT_C)
+
+    while True:
+        left_intensity = left_sensor.ambient_light_intensity
+        right_intensity = right_sensor.ambient_light_intensity
+        intensity_difference = left_intensity - right_intensity
+        speed_difference = intensity_difference * 5
+        # Calculate the turn ratio to adjust the robot's direction
+        # Calculate the left and right motor speeds
+        left_speed = base_speed + speed_difference
+        right_speed = base_speed - speed_difference
+
+        # Limit the motor speeds to prevent them from going beyond the allowed range
+        left_speed = max(-100, min(100, left_speed))
+        right_speed = max(-100, min(100, right_speed))
+
+        # Set the motor speeds
+        if abs(intensity_difference) > 15:
+            tank_drive.on_for_seconds(-70, -70, .4)
+        else:
+
+            tank_drive.on(-left_speed, -right_speed)
+
+        # Sleep for a short time to avoid excessive CPU usage
+        sleep(0.1)
+
+def Aggression():
+    left_sensor = ColorSensor('in1')
+    right_sensor = ColorSensor('in3')
+    base_speed = 10
+
+    tank_drive = MoveTank(OUTPUT_B, OUTPUT_C)
+
+    while True:
+        left_intensity = left_sensor.ambient_light_intensity
+        right_intensity = right_sensor.ambient_light_intensity
+        intensity_difference = left_intensity - right_intensity
+        speed_difference = intensity_difference * 5
+        # Calculate the left and right motor speeds
+        left_speed = base_speed - speed_difference
+        right_speed = base_speed + speed_difference
+
+        # Limit the motor speeds to prevent them from going beyond the allowed range
+        left_speed = max(-100, min(100, left_speed))
+        right_speed = max(-100, min(100, right_speed))
+
+        # Set the motor speeds
+        tank_drive.on(left_speed, right_speed)
+
+        # Sleep for a short time to avoid excessive CPU usage
+        sleep(0.1)
+
+Aggression()
